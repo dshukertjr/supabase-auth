@@ -1,11 +1,17 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:jwt_decode/jwt_decode.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   await Supabase.initialize(
-    url: 'supabaseUrl',
-    anonKey: 'supabaseKey',
+    url: 'https://nlbsnpoablmsxwkdbmer.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYyOTE5ODEwMiwiZXhwIjoxOTQ0Nzc0MTAyfQ.XZWLzz95pyU9msumQNsZKNBXfyss-g214iTVAwyQLPA',
   );
 
   runApp(const MyApp());
@@ -14,6 +20,7 @@ Future<void> main() async {
 final supabase = Supabase.instance.client;
 
 final _router = GoRouter(
+  initialLocation: '/login',
   routes: [
     GoRoute(
       path: '/',
@@ -82,6 +89,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Forgot Password')),
       body: ListView(
+        padding: const EdgeInsets.all(24),
         children: [
           TextFormField(
             decoration: const InputDecoration(label: Text('Email')),
@@ -152,13 +160,50 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            context.go('/forgot-password');
-          },
-          child: const Text('Forgot password'),
-        ),
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                final googleUser = await GoogleSignIn().signIn();
+
+                // Obtain the auth details from the request
+                final googleAuth = await googleUser?.authentication;
+
+                final idToken = googleAuth?.idToken;
+
+                if (idToken == null) {
+                  return;
+                }
+
+                final payload = Jwt.parseJwt(idToken);
+
+                final nonce = payload['nonce'] as String;
+
+                final hashedNonce =
+                    sha256.convert(utf8.encode(nonce)).toString();
+
+                final res = await supabase.auth.signInWithIdToken(
+                  provider: Provider.google,
+                  idToken: idToken,
+                  nonce: nonce,
+                );
+
+                print(res);
+              } catch (error) {
+                print(error);
+              }
+            },
+            child: const Text('Google login'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              context.go('/forgot-password');
+            },
+            child: const Text('Forgot password'),
+          ),
+        ],
       ),
     );
   }

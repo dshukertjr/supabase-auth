@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>428843675299-oo4u5ihk1g8n5ipb8ieis1mb66q3h64g.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.428843675299-oo4u5ihk1g8n5ipb8ieis1mb66q3h64g</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>428843675299-hsah6e5plj1vn8epqba36edoq6d22hau.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDy_kp8AWc2J5aAgYnBxQKT7OyEECfV-cQ</string>
+	<key>GCM_SENDER_ID</key>
+	<string>428843675299</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.authflow</string>
+	<key>PROJECT_ID</key>
+	<string>playground-bee7d</string>
+	<key>STORAGE_BUCKET</key>
+	<string>playground-bee7d.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:428843675299:ios:2a04753c0e61e2caa99916</string>
+	<key>DATABASE_URL</key>
+	<string>https://playground-bee7d.firebaseio.com</string>
+</dict>
+</plist>
