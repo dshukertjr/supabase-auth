@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jwt_decode/jwt_decode.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 Future<void> main() async {
   await Supabase.initialize(
@@ -165,37 +167,58 @@ class LoginPage extends StatelessWidget {
         children: [
           ElevatedButton(
             onPressed: () async {
-              try {
-                final googleUser = await GoogleSignIn().signIn();
+              final googleUser = await GoogleSignIn().signIn();
 
-                // Obtain the auth details from the request
-                final googleAuth = await googleUser?.authentication;
+              // Obtain the auth details from the request
+              final googleAuth = await googleUser?.authentication;
 
-                final idToken = googleAuth?.idToken;
+              final idToken = googleAuth?.idToken;
 
-                if (idToken == null) {
-                  return;
-                }
-
-                final payload = Jwt.parseJwt(idToken);
-
-                final nonce = payload['nonce'] as String;
-
-                final hashedNonce =
-                    sha256.convert(utf8.encode(nonce)).toString();
-
-                final res = await supabase.auth.signInWithIdToken(
-                  provider: Provider.google,
-                  idToken: idToken,
-                  nonce: nonce,
-                );
-
-                print(res);
-              } catch (error) {
-                print(error);
+              if (idToken == null) {
+                return;
               }
+
+              final payload = Jwt.parseJwt(idToken);
+
+              final hashedNonce = payload['nonce'] as String;
+
+              // final hashedNonce = sha256.convert(utf8.encode(nonce)).toString();
+
+              final res = await supabase.auth.signInWithIdToken(
+                provider: Provider.google,
+                idToken: idToken,
+                nonce: hashedNonce,
+              );
             },
             child: const Text('Google login'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final nonce = const Uuid().v4();
+              final hashedNonce = sha256.convert(utf8.encode(nonce)).toString();
+
+              const String clientId = 'com.app';
+
+              final AuthorizationCredentialAppleID credential =
+                  await SignInWithApple.getAppleIDCredential(
+                scopes: [
+                  AppleIDAuthorizationScopes.email,
+                ],
+                nonce: hashedNonce,
+              );
+
+              final idToken = credential.identityToken;
+              if (idToken == null) {
+                return;
+              }
+
+              await supabase.auth.signInWithIdToken(
+                provider: Provider.apple,
+                idToken: idToken,
+                nonce: nonce,
+              );
+            },
+            child: const Text('Apple login'),
           ),
           ElevatedButton(
             onPressed: () {
