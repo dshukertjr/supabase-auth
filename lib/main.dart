@@ -11,9 +11,9 @@ import 'package:uuid/uuid.dart';
 
 Future<void> main() async {
   await Supabase.initialize(
-    url: 'https://nlbsnpoablmsxwkdbmer.supabase.co',
+    url: 'https://mdembiczgqmbdobqwitc.supabase.co',
     anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYyOTE5ODEwMiwiZXhwIjoxOTQ0Nzc0MTAyfQ.XZWLzz95pyU9msumQNsZKNBXfyss-g214iTVAwyQLPA',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZW1iaWN6Z3FtYmRvYnF3aXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzkxMDA0MDcsImV4cCI6MTk5NDY3NjQwN30.TWBOSGcW29IZNBjatdKTpT8qtC34smxefVXzM7aumCY',
   );
 
   runApp(const MyApp());
@@ -155,16 +155,45 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
   }
 }
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  User? _user;
+
+  @override
+  void initState() {
+    super.initState();
+    supabase.auth.onAuthStateChange.listen((event) {
+      setState(() {
+        _user = event.session?.user;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(
+        title: const Text('Login'),
+        actions: [
+          TextButton(
+            style: const ButtonStyle(
+                foregroundColor: MaterialStatePropertyAll(Colors.white)),
+            onPressed: () => supabase.auth.signOut(),
+            child: const Text('sign out'),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
+          Text('Current User: ${_user?.toJson()}'),
+          const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () async {
               final googleUser = await GoogleSignIn().signIn();
@@ -197,13 +226,9 @@ class LoginPage extends StatelessWidget {
               final nonce = const Uuid().v4();
               final hashedNonce = sha256.convert(utf8.encode(nonce)).toString();
 
-              const String clientId = 'com.app';
-
               final AuthorizationCredentialAppleID credential =
                   await SignInWithApple.getAppleIDCredential(
-                scopes: [
-                  AppleIDAuthorizationScopes.email,
-                ],
+                scopes: [],
                 nonce: hashedNonce,
               );
 
@@ -212,11 +237,16 @@ class LoginPage extends StatelessWidget {
                 return;
               }
 
-              await supabase.auth.signInWithIdToken(
+              final payload = Jwt.parseJwt(idToken);
+
+              print(payload);
+
+              final res = await supabase.auth.signInWithIdToken(
                 provider: Provider.apple,
                 idToken: idToken,
                 nonce: nonce,
               );
+              print(res);
             },
             child: const Text('Apple login'),
           ),
