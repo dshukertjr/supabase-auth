@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
@@ -196,8 +197,9 @@ class _LoginPageState extends State<LoginPage> {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () async {
-              // Should be a random String in production
-              const rawNonce = 'nonce';
+              // Google login flow
+
+              final rawNonce = _generateRandomString();
               final hashedNonce =
                   sha256.convert(utf8.encode(rawNonce)).toString();
 
@@ -208,7 +210,7 @@ class _LoginPageState extends State<LoginPage> {
                   '428843675299-oo4u5ihk1g8n5ipb8ieis1mb66q3h64g.apps.googleusercontent.com';
 
               /// bundle ID of the app
-              const bundleId = 'com.example.authflow';
+              const bundleId = 'com.dshukertjr.authflow';
 
               /// fixed for google login
               const redirectUrl = '$bundleId:/google_auth';
@@ -273,12 +275,27 @@ class _LoginPageState extends State<LoginPage> {
           ),
           ElevatedButton(
             onPressed: () async {
-              const rawNonce = 'nonce';
+              // Apple login flow
+
+              final rawNonce = _generateRandomString();
               final hashedNonce =
                   sha256.convert(utf8.encode(rawNonce)).toString();
 
+              // client ID and redirectUrl are generated with the following steps
+              // https://pub.dev/packages/sign_in_with_apple#create-a-service-id
+              const clientId = 'com.dshukertjr.authflow';
+
+              const redirectUrl =
+                  'https://powerful-endurable-pantry.glitch.me/callbacks/sign_in_with_apple';
+
               final credential =
                   await apple.SignInWithApple.getAppleIDCredential(
+                // webAuthenticationOptions: Platform.isIOS
+                //     ? null
+                //     : apple.WebAuthenticationOptions(
+                //         clientId: clientId,
+                //         redirectUri: Uri.parse(redirectUrl),
+                //       ),
                 scopes: [],
                 nonce: hashedNonce,
               );
@@ -310,5 +327,10 @@ class _LoginPageState extends State<LoginPage> {
         ],
       ),
     );
+  }
+
+  String _generateRandomString() {
+    final random = Random.secure();
+    return base64Url.encode(List<int>.generate(16, (_) => random.nextInt(256)));
   }
 }
