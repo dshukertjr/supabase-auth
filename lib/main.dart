@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart' as apple;
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:uuid/uuid.dart';
 
 Future<void> main() async {
   await Supabase.initialize(
@@ -192,25 +191,33 @@ class _LoginPageState extends State<LoginPage> {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          Text('Current User: ${_user?.toJson()}'),
+          Text(
+              'Current User: ${_user?.toJson().entries.map((e) => '${e.key}: ${e.value}\n').reduce((value, element) => value + element)}'),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () async {
+              // Should be a random String in production
               const rawNonce = 'nonce';
               final hashedNonce =
                   sha256.convert(utf8.encode(rawNonce)).toString();
 
               const appAuth = FlutterAppAuth();
 
+              /// client id registered on Google
               const clientId =
                   '428843675299-oo4u5ihk1g8n5ipb8ieis1mb66q3h64g.apps.googleusercontent.com';
 
+              /// bundle ID of the app
               const bundleId = 'com.example.authflow';
+
+              /// fixed for google login
               const redirectUrl = '$bundleId:/google_auth';
 
+              /// fixed for google login
               const discoveryUrl =
                   'https://accounts.google.com/.well-known/openid-configuration';
 
+              // authorize the user by opening the concent page
               final result = await appAuth.authorize(
                 AuthorizationRequest(
                   clientId,
@@ -228,6 +235,7 @@ class _LoginPageState extends State<LoginPage> {
                 return;
               }
 
+              // Request the access and id token to google
               final tokenResult = await appAuth.token(
                 TokenRequest(
                   clientId,
@@ -265,11 +273,11 @@ class _LoginPageState extends State<LoginPage> {
           ),
           ElevatedButton(
             onPressed: () async {
-              final rawNonce = const Uuid().v4();
+              const rawNonce = 'nonce';
               final hashedNonce =
                   sha256.convert(utf8.encode(rawNonce)).toString();
 
-              final apple.AuthorizationCredentialAppleID credential =
+              final credential =
                   await apple.SignInWithApple.getAppleIDCredential(
                 scopes: [],
                 nonce: hashedNonce,
