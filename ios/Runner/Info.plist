@@ -53,13 +53,17 @@
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>authflow</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<!-- Copied from GoogleService-Info.plist key REVERSED_CLIENT_ID -->
 				<string>com.googleusercontent.apps.428843675299-oo4u5ihk1g8n5ipb8ieis1mb66q3h64g</string>
+				<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 			</array>
 		</dict>
 	</array>
 	<!-- End of the Google Sign-in Section -->
+
 </dict>
 </plist>

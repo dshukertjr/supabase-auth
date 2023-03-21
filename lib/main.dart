@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jwt_decode/jwt_decode.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart' as apple;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -196,12 +196,54 @@ class _LoginPageState extends State<LoginPage> {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () async {
-              final googleUser = await GoogleSignIn().signIn();
+              const rawNonce = 'nonce';
+              final hashedNonce =
+                  sha256.convert(utf8.encode(rawNonce)).toString();
 
-              // Obtain the auth details from the request
-              final googleAuth = await googleUser?.authentication;
+              const appAuth = FlutterAppAuth();
 
-              final idToken = googleAuth?.idToken;
+              const clientId =
+                  '428843675299-oo4u5ihk1g8n5ipb8ieis1mb66q3h64g.apps.googleusercontent.com';
+
+              const bundleId = 'com.example.authflow';
+              const redirectUrl = '$bundleId:/google_auth';
+
+              const discoveryUrl =
+                  'https://accounts.google.com/.well-known/openid-configuration';
+
+              final result = await appAuth.authorize(
+                AuthorizationRequest(
+                  clientId,
+                  redirectUrl,
+                  discoveryUrl: discoveryUrl,
+                  nonce: hashedNonce,
+                  scopes: [
+                    'openid',
+                    'email',
+                  ],
+                ),
+              );
+
+              if (result == null) {
+                return;
+              }
+
+              final tokenResult = await appAuth.token(
+                TokenRequest(
+                  clientId,
+                  redirectUrl,
+                  authorizationCode: result.authorizationCode,
+                  discoveryUrl: discoveryUrl,
+                  codeVerifier: result.codeVerifier,
+                  nonce: rawNonce,
+                  scopes: [
+                    'openid',
+                    'email',
+                  ],
+                ),
+              );
+
+              final idToken = tokenResult?.idToken;
 
               if (idToken == null) {
                 return;
@@ -209,25 +251,26 @@ class _LoginPageState extends State<LoginPage> {
 
               final payload = Jwt.parseJwt(idToken);
 
-              final hashedNonce = payload['nonce'] as String;
-
-              // final hashedNonce = sha256.convert(utf8.encode(nonce)).toString();
+              print(payload);
 
               final res = await supabase.auth.signInWithIdToken(
                 provider: Provider.google,
                 idToken: idToken,
-                nonce: hashedNonce,
+                nonce: rawNonce,
               );
+
+              print(res.session.toString());
             },
             child: const Text('Google login'),
           ),
           ElevatedButton(
             onPressed: () async {
-              final nonce = const Uuid().v4();
-              final hashedNonce = sha256.convert(utf8.encode(nonce)).toString();
+              final rawNonce = const Uuid().v4();
+              final hashedNonce =
+                  sha256.convert(utf8.encode(rawNonce)).toString();
 
-              final AuthorizationCredentialAppleID credential =
-                  await SignInWithApple.getAppleIDCredential(
+              final apple.AuthorizationCredentialAppleID credential =
+                  await apple.SignInWithApple.getAppleIDCredential(
                 scopes: [],
                 nonce: hashedNonce,
               );
@@ -244,7 +287,7 @@ class _LoginPageState extends State<LoginPage> {
               final res = await supabase.auth.signInWithIdToken(
                 provider: Provider.apple,
                 idToken: idToken,
-                nonce: nonce,
+                nonce: rawNonce,
               );
               print(res);
             },
