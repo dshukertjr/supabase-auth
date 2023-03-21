@@ -31,7 +31,6 @@
 			<string>authflow</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.428843675299-oo4u5ihk1g8n5ipb8ieis1mb66q3h64g</string>
 				<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 			</array>
 		</dict>

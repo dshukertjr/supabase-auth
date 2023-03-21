@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
@@ -207,10 +208,10 @@ class _LoginPageState extends State<LoginPage> {
 
               /// client id registered on Google
               const clientId =
-                  '428843675299-oo4u5ihk1g8n5ipb8ieis1mb66q3h64g.apps.googleusercontent.com';
+                  '428843675299-qmgegrb6s4csc4ec762uu2946pfq0mpr.apps.googleusercontent.com';
 
               /// bundle ID of the app
-              const bundleId = 'com.dshukertjr.authflow';
+              const bundleId = 'dev.dshukertjr.authflow';
 
               /// fixed for google login
               const redirectUrl = '$bundleId:/google_auth';
@@ -283,19 +284,19 @@ class _LoginPageState extends State<LoginPage> {
 
               // client ID and redirectUrl are generated with the following steps
               // https://pub.dev/packages/sign_in_with_apple#create-a-service-id
-              const clientId = 'com.dshukertjr.authflow';
+              const clientId = 'dev.dshukertjr.authflow';
 
               const redirectUrl =
                   'https://powerful-endurable-pantry.glitch.me/callbacks/sign_in_with_apple';
 
               final credential =
                   await apple.SignInWithApple.getAppleIDCredential(
-                // webAuthenticationOptions: Platform.isIOS
-                //     ? null
-                //     : apple.WebAuthenticationOptions(
-                //         clientId: clientId,
-                //         redirectUri: Uri.parse(redirectUrl),
-                //       ),
+                webAuthenticationOptions: Platform.isIOS
+                    ? null
+                    : apple.WebAuthenticationOptions(
+                        clientId: clientId,
+                        redirectUri: Uri.parse(redirectUrl),
+                      ),
                 scopes: [],
                 nonce: hashedNonce,
               );
