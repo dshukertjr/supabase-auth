@@ -207,6 +207,8 @@ class _LoginPageState extends State<LoginPage> {
               const appAuth = FlutterAppAuth();
 
               /// client id registered on Google
+              /// ios: 428843675299-qmgegrb6s4csc4ec762uu2946pfq0mpr.apps.googleusercontent.com
+              /// android: 428843675299-9d2ecavls7df3jupoir4vg3jhaf2k1am.apps.googleusercontent.com
               const clientId =
                   '428843675299-qmgegrb6s4csc4ec762uu2946pfq0mpr.apps.googleusercontent.com';
 
@@ -324,6 +326,12 @@ class _LoginPageState extends State<LoginPage> {
               context.go('/forgot-password');
             },
             child: const Text('Forgot password'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await supabase.auth.signInWithOAuth(Provider.apple);
+            },
+            child: const Text('OAuth Apple login'),
           ),
         ],
       ),
