@@ -9,8 +9,10 @@ import 'package:go_router/go_router.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart' as apple;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 Future<void> main() async {
+  usePathUrlStrategy();
   await Supabase.initialize(
     url: 'https://mdembiczgqmbdobqwitc.supabase.co',
     anonKey:
