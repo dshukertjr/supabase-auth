@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
@@ -286,22 +285,12 @@ class _LoginPageState extends State<LoginPage> {
               final hashedNonce =
                   sha256.convert(utf8.encode(rawNonce)).toString();
 
-              // client ID and redirectUrl are generated with the following steps
-              // https://pub.dev/packages/sign_in_with_apple#create-a-service-id
-              const clientId = 'dev.dshukertjr.authflow';
-
-              const redirectUrl =
-                  'https://powerful-endurable-pantry.glitch.me/callbacks/sign_in_with_apple';
-
               final credential =
                   await apple.SignInWithApple.getAppleIDCredential(
-                webAuthenticationOptions: Platform.isIOS
-                    ? null
-                    : apple.WebAuthenticationOptions(
-                        clientId: clientId,
-                        redirectUri: Uri.parse(redirectUrl),
-                      ),
-                scopes: [],
+                scopes: [
+                  apple.AppleIDAuthorizationScopes.email,
+                  apple.AppleIDAuthorizationScopes.fullName,
+                ],
                 nonce: hashedNonce,
               );
 
