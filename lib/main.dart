@@ -171,6 +171,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   User? _user;
 
+  static const appAuth = FlutterAppAuth();
+
   @override
   void initState() {
     super.initState();
@@ -208,8 +210,6 @@ class _LoginPageState extends State<LoginPage> {
               final rawNonce = _generateRandomString();
               final hashedNonce =
                   sha256.convert(utf8.encode(rawNonce)).toString();
-
-              const appAuth = FlutterAppAuth();
 
               /// client id registered on Google
               /// ios: 428843675299-qmgegrb6s4csc4ec762uu2946pfq0mpr.apps.googleusercontent.com
@@ -281,6 +281,79 @@ class _LoginPageState extends State<LoginPage> {
               print(res.session.toString());
             },
             child: const Text('Google login'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              // Apple login flow using AppAuth
+
+              final rawNonce = _generateRandomString();
+              final hashedNonce =
+                  sha256.convert(utf8.encode(rawNonce)).toString();
+
+              /// bundle ID of the app
+              const bundleId = 'dev.dshukertjr.authflow';
+
+              const clientId = bundleId;
+
+              const redirectUrl = '$bundleId:/apple_auth';
+
+              /// fixed for google login
+              const discoveryUrl =
+                  'https://appleid.apple.com/.well-known/openid-configuration';
+
+              // authorize the user by opening the concent page
+              final result = await appAuth.authorize(
+                AuthorizationRequest(
+                  clientId,
+                  redirectUrl,
+                  discoveryUrl: discoveryUrl,
+                  nonce: hashedNonce,
+                  responseMode: 'form_post',
+                  scopes: [
+                    'openid',
+                    'email',
+                  ],
+                ),
+              );
+
+              if (result == null) {
+                return;
+              }
+
+              // Request the access and id token to google
+              final tokenResult = await appAuth.token(
+                TokenRequest(
+                  clientId,
+                  redirectUrl,
+                  authorizationCode: result.authorizationCode,
+                  discoveryUrl: discoveryUrl,
+                  codeVerifier: result.codeVerifier,
+                  nonce: result.nonce,
+                  scopes: [
+                    'openid',
+                    'email',
+                  ],
+                ),
+              );
+
+              final idToken = tokenResult?.idToken;
+
+              if (idToken == null) {
+                return;
+              }
+
+              final payload = Jwt.parseJwt(idToken);
+
+              print(payload);
+
+              final res = await supabase.auth.signInWithIdToken(
+                provider: Provider.apple,
+                idToken: idToken,
+                nonce: rawNonce,
+              );
+              print(res);
+            },
+            child: const Text('Apple login with appauth'),
           ),
           ElevatedButton(
             onPressed: () async {
