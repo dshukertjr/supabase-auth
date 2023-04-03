@@ -18,36 +18,40 @@ Future<void> main() async {
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kZW1iaWN6Z3FtYmRvYnF3aXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzkxMDA0MDcsImV4cCI6MTk5NDY3NjQwN30.TWBOSGcW29IZNBjatdKTpT8qtC34smxefVXzM7aumCY',
   );
 
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 final supabase = Supabase.instance.client;
 
-final _router = GoRouter(
-  initialLocation: '/login',
-  routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const HomePage(),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginPage(),
-    ),
-    GoRoute(
-      path: '/forgot-password',
-      builder: (context, state) => const ForgotPasswordPage(),
-    ),
-    GoRoute(
-      path: '/reset-password',
-      builder: (context, state) => const PasswordResetPage(),
-    ),
-  ],
-);
-
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
 
+  final _router = GoRouter(
+    initialLocation: '/login',
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const HomePage(),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) => const PasswordResetPage(),
+      ),
+    ],
+    redirect: (context, state) {
+      final isSignedIn = supabase.auth.currentSession != null;
+
+      return null;
+    },
+  );
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -217,6 +221,7 @@ class _LoginPageState extends State<LoginPage> {
               const bundleId = 'dev.dshukertjr.authflow';
 
               /// fixed for google login
+              // const redirectUrl = '$bundleId:/google_auth';
               const redirectUrl = '$bundleId:/google_auth';
 
               /// fixed for google login
@@ -249,7 +254,7 @@ class _LoginPageState extends State<LoginPage> {
                   authorizationCode: result.authorizationCode,
                   discoveryUrl: discoveryUrl,
                   codeVerifier: result.codeVerifier,
-                  nonce: rawNonce,
+                  nonce: result.nonce,
                   scopes: [
                     'openid',
                     'email',
